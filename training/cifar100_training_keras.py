@@ -20,7 +20,7 @@ channels = 3
 img_rows = 32
 img_cols = 32
 
-classes = 10
+classes = 100
 epsilon = 1e-6
 momentum = 0.9
 weight_decay = 0.0004
@@ -28,7 +28,7 @@ use_bias = False
 
 ###### Argu ######
 
-weight_name = "weight_0927_cifar10.hdf5"
+weight_name = "weight_0927_cifar100.hdf5"
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-w", "--weights", type=str,
@@ -46,7 +46,7 @@ def softmax_layer(x):
     return softmax_layer_op(x)
 
 
-(train_data, train_labels), (test_data, test_labels) = cifar10.load_data()
+(train_data, train_labels), (test_data, test_labels) = cifar100.load_data()
 
 # convert class vectors to binary class matrices
 train_labels = to_categorical(train_labels, classes)
@@ -58,49 +58,53 @@ print(train_labels.shape, 'train_labels')
 model = Sequential()
 
 #Conv1 and ReLU1
-model.add(Conv2D(32, kernel_size=(3,3), input_shape=(img_rows, img_cols, channels), data_format='channels_last',
+model.add(Conv2D(128, kernel_size=(3,3), input_shape=(img_rows, img_cols, channels), data_format='channels_last',
                  kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv1'))
 model.add(Activation(relu_layer, name='act_conv1'))
 
 #Conv2 and ReLU2
-model.add(Conv2D(32, kernel_size=(3,3), data_format='channels_last', kernel_initializer='he_normal', padding='same',
+model.add(Conv2D(128, kernel_size=(3,3), data_format='channels_last', kernel_initializer='he_normal', padding='same',
                  use_bias=use_bias, name='conv2'))
 model.add(Activation(relu_layer, name='act_conv2'))
 
 #Pool1
 model.add(MaxPooling2D(pool_size=(2,2), name='pool1', data_format='channels_last'))
+model.add(Dropout(0.1))
 
-# model.add(Conv2D(32, kernel_size=(3,3), input_shape=(img_rows, img_cols, channels), data_format='channels_last', kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv3'))
-# model.add(Activation(relu_layer, name='act_conv3'))
-#
-# #Conv2 and ReLU2
-# model.add(Conv2D(32, kernel_size=(3,3), data_format='channels_last', kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv4'))
-# model.add(Activation(relu_layer, name='act_conv4'))
-#
-# #Pool1
-# model.add(MaxPooling2D(pool_size=(2,2), name='pool2', data_format='channels_first'))
+##################
+#Conv3 and ReLU3
+model.add(Conv2D(256, kernel_size=(3,3), input_shape=(img_rows, img_cols, channels), data_format='channels_last', kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv3'))
+model.add(Activation(relu_layer, name='act_conv3'))
+
+#Conv4 and ReLU4
+model.add(Conv2D(256, kernel_size=(3,3), data_format='channels_last', kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv4'))
+model.add(Activation(relu_layer, name='act_conv4'))
+
+#Pool2
+model.add(MaxPooling2D(pool_size=(2,2), name='pool2', data_format='channels_first'))
 
 # reduce overfitting
 model.add(Dropout(0.25))
 
-#Conv3 and ReLU3
-model.add(Conv2D(64, kernel_size=(3,3), data_format='channels_last', kernel_initializer='he_normal',
+##################
+#Conv5 and ReLU5
+model.add(Conv2D(512, kernel_size=(3,3), data_format='channels_last', kernel_initializer='he_normal',
                  padding='same', use_bias=use_bias, name='conv5'))
 model.add(Activation(relu_layer, name='act_conv5'))
 
-#Conv4 and ReLU4
-model.add(Conv2D(64, kernel_size=(3,3), data_format='channels_last', kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv6'))
+#Conv6 and ReLU6
+model.add(Conv2D(512, kernel_size=(3,3), data_format='channels_last', kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv6'))
 model.add(Activation(relu_layer, name='act_conv6'))
 
 #Pool2
 model.add(MaxPooling2D(pool_size=(2,2), name='pool3', data_format='channels_last'))
 
-model.add(Dropout(0.25))
+model.add(Dropout(0.5))
 
+#################################
 model.add(Flatten())
-
 #FC1, Batch Normalization and ReLU5
-model.add(Dense(512, use_bias=True, name='FC1', kernel_initializer='he_normal'))
+model.add(Dense(1024, use_bias=True, name='FC1', kernel_initializer='he_normal'))
 model.add(BatchNormalization(epsilon=epsilon, momentum=momentum, name='bn1'))
 model.add(Activation(relu_layer, name='act_fc1'))
 

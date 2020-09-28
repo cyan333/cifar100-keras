@@ -1,0 +1,5 @@
+
+cifar10_example/inference/data/*
+cifar10_example/training/output/*
+training/output/*
+cifar10_example/training/data/*

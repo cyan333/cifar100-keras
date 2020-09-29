@@ -52,6 +52,9 @@ def softmax_layer(x):
 train_labels = to_categorical(train_labels, classes)
 test_labels = to_categorical(test_labels, classes)
 
+test_data = test_data/255
+train_data = train_data/ 255
+
 print(train_data.shape, 'train data')
 print(train_labels.shape, 'train_labels')
 

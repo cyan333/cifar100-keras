@@ -13,6 +13,13 @@ from sec_ops import relu_layer as relu_layer_op
 from sec_ops import softmax_layer as softmax_layer_op
 import argparse
 
+import tensorflow.keras as keras
+from tensorflow import Tensor
+from keras.layers import GlobalMaxPooling2D
+
+
+
+
 ###### Parameters #######.
 batch_size = 32
 epochs = 100
@@ -25,6 +32,7 @@ epsilon = 1e-6
 momentum = 0.9
 weight_decay = 0.0004
 use_bias = False
+
 
 ###### Argu ######
 
@@ -44,6 +52,8 @@ def relu_layer(x):
 
 def softmax_layer(x):
     return softmax_layer_op(x)
+
+
 
 
 (train_data, train_labels), (test_data, test_labels) = cifar100.load_data()
@@ -102,7 +112,7 @@ model.add(Activation(relu_layer, name='act_conv6'))
 #Pool2
 model.add(MaxPooling2D(pool_size=(2,2), name='pool3', data_format='channels_last'))
 
-model.add(Dropout(0.5))
+model.add(Dropout(0.25))
 
 #################################
 model.add(Flatten())
@@ -111,16 +121,16 @@ model.add(Dense(1024, use_bias=True, name='FC1', kernel_initializer='he_normal')
 model.add(BatchNormalization(epsilon=epsilon, momentum=momentum, name='bn1'))
 model.add(Activation(relu_layer, name='act_fc1'))
 
-model.add(Dropout(0.5))
+model.add(Dropout(0.25))
 
 #FC2, Batch Normalization and ReLU6
 model.add(Dense(classes, use_bias=True, name='FC2', kernel_initializer='he_normal'))
 model.add(BatchNormalization(epsilon=epsilon, momentum=momentum, name='bn2'))
 model.add(Activation(softmax_layer, name='act_fc2'))
 
-#Optimizers
-opt = RMSprop(lr=0.0001, decay=1e-6)
-model.compile(loss='squared_hinge', optimizer=opt, metrics=['acc'])
+# Optimizers
+opt = SGD(lr=0.01, momentum=0.9)
+model.compile(loss='kullback_leibler_divergence', optimizer=opt, metrics=['acc'])
 model.summary()
 
 # WEIGHTS_FNAME = args["weights"]
@@ -140,9 +150,13 @@ else:
                                            mode='max', period=1)
 
     history = model.fit(train_data, train_labels,
-                        batch_size=batch_size, epochs=(epochs),
-                        verbose=1, validation_data=(test_data, test_labels),
-                        callbacks=[checkpoint_scheduler], shuffle=True)
+                        batch_size=batch_size,
+                        epochs=epochs,
+                        verbose=1,
+                        validation_data=(test_data, test_labels),
+                        callbacks=[checkpoint_scheduler],
+                        shuffle=True)
+
     print("[INFO] dumping weights to file...")
     model.save_weights(WEIGHTS_FNAME, overwrite=True)
 

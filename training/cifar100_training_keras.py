@@ -12,7 +12,7 @@ from keras.utils import normalize
 from sec_ops import relu_layer as relu_layer_op
 from sec_ops import softmax_layer as softmax_layer_op
 import argparse
-
+import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow import Tensor
 from keras.layers import GlobalMaxPooling2D
@@ -68,65 +68,75 @@ train_data = train_data/ 255
 print(train_data.shape, 'train data')
 print(train_labels.shape, 'train_labels')
 
+
 model = Sequential()
 
 #Conv1 and ReLU1
-model.add(Conv2D(128, kernel_size=(3,3), input_shape=(img_rows, img_cols, channels), data_format='channels_last',
+model.add(Conv2D(96, kernel_size=(3,3), strides=(2,2), input_shape=(32,32,3), data_format='channels_last',
                  kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv1'))
 model.add(Activation(relu_layer, name='act_conv1'))
+model.add(MaxPooling2D(pool_size=(2,2), strides=(1,1), data_format='channels_last'))
 
 #Conv2 and ReLU2
-model.add(Conv2D(128, kernel_size=(3,3), data_format='channels_last', kernel_initializer='he_normal', padding='same',
+model.add(Conv2D(256, kernel_size=(3,3), strides=(1,1), data_format='channels_last', kernel_initializer='he_normal', padding='same',
                  use_bias=use_bias, name='conv2'))
 model.add(Activation(relu_layer, name='act_conv2'))
+model.add(MaxPooling2D(pool_size=(3,3), strides=(1,1), data_format='channels_last'))
 
 #Pool1
-model.add(MaxPooling2D(pool_size=(2,2), name='pool1', data_format='channels_last'))
 model.add(Dropout(0.1))
 
 ##################
 #Conv3 and ReLU3
-model.add(Conv2D(256, kernel_size=(3,3), input_shape=(img_rows, img_cols, channels), data_format='channels_last', kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv3'))
+model.add(Conv2D(384, kernel_size=(3,3), strides=(1,1), kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv3'))
 model.add(Activation(relu_layer, name='act_conv3'))
 
 #Conv4 and ReLU4
-model.add(Conv2D(256, kernel_size=(3,3), data_format='channels_last', kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv4'))
+model.add(Conv2D(384, kernel_size=(1,1), strides=(1,1), kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv4'))
 model.add(Activation(relu_layer, name='act_conv4'))
 
+model.add(Conv2D(256, kernel_size=(1,1), strides=(1,1), kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv5'))
+model.add(Activation(relu_layer, name='act_conv5'))
 #Pool2
-model.add(MaxPooling2D(pool_size=(2,2), name='pool2', data_format='channels_first'))
+model.add(MaxPooling2D(pool_size=(3,3), strides=(2,2)))
 
 # reduce overfitting
 model.add(Dropout(0.25))
 
 ##################
-#Conv5 and ReLU5
-model.add(Conv2D(512, kernel_size=(3,3), data_format='channels_last', kernel_initializer='he_normal',
-                 padding='same', use_bias=use_bias, name='conv5'))
-model.add(Activation(relu_layer, name='act_conv5'))
-
-#Conv6 and ReLU6
-model.add(Conv2D(512, kernel_size=(3,3), data_format='channels_last', kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv6'))
-model.add(Activation(relu_layer, name='act_conv6'))
-
-#Pool2
-model.add(MaxPooling2D(pool_size=(2,2), name='pool3', data_format='channels_last'))
-
-model.add(Dropout(0.25))
+# #Conv5 and ReLU5
+# model.add(Conv2D(512, kernel_size=(3,3), data_format='channels_last', kernel_initializer='he_normal',
+#                  padding='same', use_bias=use_bias, name='conv5'))
+# model.add(Activation(relu_layer, name='act_conv5'))
+#
+# #Conv6 and ReLU6
+# model.add(Conv2D(512, kernel_size=(3,3), data_format='channels_last', kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv6'))
+# model.add(Activation(relu_layer, name='act_conv6'))
+#
+# #Pool2
+# model.add(MaxPooling2D(pool_size=(2,2), name='pool3', data_format='channels_last'))
+#
+# model.add(Dropout(0.25))
 
 #################################
 model.add(Flatten())
 #FC1, Batch Normalization and ReLU5
-model.add(Dense(1024, use_bias=True, name='FC1', kernel_initializer='he_normal'))
+model.add(Dense(4096, use_bias=True, name='FC1', kernel_initializer='he_normal'))
 model.add(BatchNormalization(epsilon=epsilon, momentum=momentum, name='bn1'))
 model.add(Activation(relu_layer, name='act_fc1'))
 
 model.add(Dropout(0.25))
 
-#FC2, Batch Normalization and ReLU6
-model.add(Dense(classes, use_bias=True, name='FC2', kernel_initializer='he_normal'))
+model.add(Dense(4096, use_bias=True, name='FC2', kernel_initializer='he_normal'))
 model.add(BatchNormalization(epsilon=epsilon, momentum=momentum, name='bn2'))
-model.add(Activation(softmax_layer, name='act_fc2'))
+model.add(Activation(relu_layer, name='act_fc2'))
+
+model.add(Dropout(0.5))
+
+#FC2, Batch Normalization and ReLU6
+model.add(Dense(classes, use_bias=True, name='FC3', kernel_initializer='he_normal'))
+model.add(BatchNormalization(epsilon=epsilon, momentum=momentum, name='bn3'))
+model.add(Activation(softmax_layer, name='act_fc3'))
 
 # Optimizers
 opt = SGD(lr=0.01, momentum=0.9)

@@ -84,7 +84,7 @@ model.add(Activation(relu_layer, name='act_conv2'))
 model.add(MaxPooling2D(pool_size=(3,3), strides=(1,1), data_format='channels_last'))
 
 #Pool1
-model.add(Dropout(0.1))
+model.add(Dropout(0.25))
 
 ##################
 #Conv3 and ReLU3
@@ -95,8 +95,8 @@ model.add(Activation(relu_layer, name='act_conv3'))
 model.add(Conv2D(384, kernel_size=(1,1), strides=(1,1), kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv4'))
 model.add(Activation(relu_layer, name='act_conv4'))
 
-model.add(Conv2D(256, kernel_size=(1,1), strides=(1,1), kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv5'))
-model.add(Activation(relu_layer, name='act_conv5'))
+# model.add(Conv2D(256, kernel_size=(1,1), strides=(1,1), kernel_initializer='he_normal', padding='same', use_bias=use_bias, name='conv5'))
+# model.add(Activation(relu_layer, name='act_conv5'))
 #Pool2
 model.add(MaxPooling2D(pool_size=(3,3), strides=(2,2)))
 

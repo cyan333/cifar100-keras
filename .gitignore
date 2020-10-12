@@ -3,3 +3,7 @@ cifar10_example/inference/data/*
 cifar10_example/training/output/*
 training/output/*
 cifar10_example/training/data/*
+*.hdf5
+*.hdf5
+*.hdf5
+inference/weight_0927_cifar100.hdf5
